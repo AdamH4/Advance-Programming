@@ -66,11 +66,6 @@ let stats (text: string) : unit =
 
     printfn "%f" average
 
-let picovina =
-    "F# is a mature, open source, functional-first programming language which empowers users and organizations to tackle complex computing problems with simple, maintainable and robust code. It is used in a wide range of application areas and is available across multiple platforms. F# runs on Linux, Mac OS X, Android, iOS, Windows as well as HTML5 and GPUs. F# is free to use and has an OSI-approved open-source license. F# is supported by industry leading companies providing professional tools, and by an active open source community. The F# Software Foundation exists to promote, protect, and advance F#, and to support and foster the growth of a diverse international community of F# users."
-
-stats picovina
-
 
 // 8. Use the 'http' function from the lecture to download the file
 // http://dijkstra.cs.ttu.ee/~juhan/itt8060/text.txt as a string
