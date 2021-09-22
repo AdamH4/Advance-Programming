@@ -208,13 +208,11 @@ let rec notFibonacci (n: int) : (int * int) =
     | 0 -> (2, 1)
     | 1 -> (1, 1)
     | _ ->
-        (fst (notFibonacci (n - 2))
-         + fst (notFibonacci (n - 1)),
-         1
-         + snd (notFibonacci (n - 2))
-         + snd (notFibonacci (n - 1)))
+        let two1, two2 = notFibonacci (n - 2)
+        let one1, one2 = notFibonacci (n - 1)
+        (two1 + one1, 1 + two2 + one2)
 
-// notFibonacci 6
+//notFibonacci 2
 
 
 
@@ -273,4 +271,4 @@ and cosApprox (d: int) (x: float) =
         ((cosApprox (d - 1) (x / 2.0)) ** 2.0)
         - ((sinApprox (d - 1) (x / 2.0)) ** 2.0)
 
-// sinApprox 10 0.7
+//sinApprox 10 0.7
