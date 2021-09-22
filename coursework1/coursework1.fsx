@@ -218,7 +218,6 @@ let rec notFibonacci (n: int) : (int * int) =
 
 
 
-
 // 7. Define the functions
 //
 //   sinApprox : int -> float -> float
