@@ -214,7 +214,7 @@ let rec notFibonacci (n: int) : (int * int) =
          + snd (notFibonacci (n - 2))
          + snd (notFibonacci (n - 1)))
 
-notFibonacci 6
+// notFibonacci 6
 
 
 
