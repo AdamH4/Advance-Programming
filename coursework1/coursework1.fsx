@@ -72,11 +72,7 @@ let intAndBool = (4, false)
 //
 // You may assume that the argument is non-negative.
 
-let atMostHalf number : int =
-    if number % 2 = 0 then
-        number / 2
-    else
-        (number - 1) / 2
+let atMostHalf number : int = number / 2
 
 
 // 3. Define a function
