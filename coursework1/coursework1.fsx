@@ -62,13 +62,6 @@
 let intAndBool = (4, false)
 
 
-
-
-
-
-
-
-
 // 2. Define a function
 //
 //   atMostHalf : int -> int
@@ -86,10 +79,6 @@ let atMostHalf number : int =
         (number - 1) / 2
 
 
-
-
-
-
 // 3. Define a function
 //
 // avgAndEq : int * int * int -> float *  (bool * bool * bool)
@@ -104,16 +93,9 @@ let atMostHalf number : int =
 
 
 let avgAndEq (i1: int, i2: int, i3: int) : float * (bool * bool * bool) =
-    let average: float = float ((i1 + i2 + i3) / 3)
+    let average: float = float (i1 + i2 + i3) / 3.0
     let similarity: (bool * bool * bool) = (i1 = i2, i2 = i3, i3 = i1)
     (average, similarity)
-
-
-
-
-
-
-
 
 
 // 4. Define a function
@@ -228,9 +210,11 @@ let rec notFibonacci (n: int) : (int * int) =
     | _ ->
         (fst (notFibonacci (n - 2))
          + fst (notFibonacci (n - 1)),
-         2)
+         1
+         + snd (notFibonacci (n - 2))
+         + snd (notFibonacci (n - 1)))
 
-// notFibonacci 10
+notFibonacci 6
 
 
 
