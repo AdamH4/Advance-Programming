@@ -181,5 +181,4 @@ let groupByAuthor (data: BibliographyItem list) : (string * BibliographyItem lis
     |> List.map (fun author -> (author, filterBooksByAuthor data author))
     |> List.distinct
 
-
 // printfn "%A" (groupByAuthor bibliographyData)
