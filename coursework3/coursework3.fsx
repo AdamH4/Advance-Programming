@@ -187,24 +187,44 @@ let step (d: Dir) (xy: XY) : XY =
 //
 // The history is represented so that the most recent item is at the head.
 
-let perform (c: Command) (s: State) : State =
+let matchLoop (m: int, n: int) (state: State) (index: int) : State =
+    match index % 2 with
+    | 0 ->
+        { direction = turn state.direction
+          position = (iterate m (step state.direction)) state.position
+          history = state.position :: state.history }
+    | _ ->
+        { direction = turn state.direction
+          position = (iterate n (step state.direction)) state.position
+          history = state.position :: state.history }
+
+// TODO POJEBANE ZAPORNE CISLA
+let performCommand (c: Command) (s: State) : State =
     match c with
     | Step n ->
         { direction = s.direction
-          position = (iterate n step) s.direction s.position
+          position = (iterate n (step s.direction)) s.position
           history = s.position :: s.history }
     | Turn n ->
-        { direction = (iterate n turn) s.direction
+        { direction = iterate n turn s.direction
           position = step s.direction s.position
-          history = s.position :: s.history }
-    | Loop (m, n) ->
-        let rectangularLoop = iterate 4
-        let direction, position = rectangularLoop ()
-        (direction, position, s :: s.history)
+          history = s.history }
+    | Loop (m, n) -> [ 0 .. 3 ] |> List.fold (matchLoop (m, n)) s
 
-
-
-
+// let firstStep =
+//     (iterate m (step s.direction)) s.position
+// let firstTurn = turn s.direction
+// let secondStep = (iterate n (step firstTurn)) firstStep
+// let secondTurn = turn firstTurn
+// let thirdStep = (iterate m (step secondTurn)) secondStep
+// let thirdTurn = turn secondTurn
+// let fourthStep = (iterate n (step thirdTurn)) thirdStep
+// let fourthTurn = turn thirdTurn
+// { direction = s.direction
+//   position = s.position
+//   history =
+//       fourthStep
+//   :: thirdStep :: secondStep :: firstStep :: s.history }
 
 
 
@@ -218,7 +238,9 @@ let perform (c: Command) (s: State) : State =
 // This must be implemented using a fold over the list of moves. (You
 // can choose whether to use fold or foldBack.)
 
-let perform (cs: Command list) (s: State) : State = failwith "please implement this"
+let performCommands (cs: Command list) (s: State) : State =
+    cs
+    |> List.fold (fun state command -> performCommand command state) s
 
 
 
@@ -231,6 +253,13 @@ let perform (cs: Command list) (s: State) : State = failwith "please implement t
 //
 // Implement this using List.map
 
+let flipSteps (commands: Command list) : Command list =
+    commands
+    |> List.map
+        (fun command ->
+            match command with
+            | Step n -> Step(n * -1)
+            | n -> n)
 
 
 
@@ -246,6 +275,14 @@ let perform (cs: Command list) (s: State) : State = failwith "please implement t
 // Implement this using List.map
 
 
+let flipTurns (commands: Command list) : Command list =
+    commands
+    |> List.map
+        (fun command ->
+            match command with
+            | Turn n -> Turn(n + 2)
+            | n -> n)
+
 
 
 // 6. Define the function
@@ -257,7 +294,14 @@ let perform (cs: Command list) (s: State) : State = failwith "please implement t
 // form Loop (m, n) or that are of the form Step k where the absolute
 // value of k is not equal to 1.
 
-
+let singleSteps (commands: Command list) : Command list =
+    commands
+    |> List.filter
+        (fun command ->
+            match command with
+            | Loop (_) -> false
+            | Step n when (abs n) <> 1 -> false
+            | _ -> true)
 
 
 // 7. Define the function
@@ -270,7 +314,18 @@ let perform (cs: Command list) (s: State) : State = failwith "please implement t
 //
 // Implement this using List.collect
 
+let unpack (index: int) (m: int) (n: int) : Command list =
+    match index % 2 with
+    | 0 -> [ Step m; Turn 1 ]
+    | _ -> [ Step n; Turn 1 ]
 
+let unpackLoops (commands: Command list) : Command list =
+    commands
+    |> List.collect
+        (fun command ->
+            match command with
+            | Loop (m, n) -> List.concat [ for i in [ 0 .. 3 ] -> unpack i m n ]
+            | _ -> [ command ])
 
 
 // 8. Define the function
@@ -300,3 +355,20 @@ let perform (cs: Command list) (s: State) : State = failwith "please implement t
 //   a sequence of Step or a sequence of Turn moves. If the next move
 //   you see is of a different kind, then you first simplify this part,
 //   add it to the simplified part and then continue.
+
+// let areCommandsSameType (first: Command) (second: Command) : bool =
+//     match (first, second) with
+//     | (Turn _, Turn _) -> true
+//     | (Step _, Step _) -> true
+//     | _,_ -> false
+
+let simplify (commandList: Command list) : Command list =
+    commandList
+    |> List.fold
+        (fun ((simplyfiedCommands, commands): Command list * Command list) (command: Command) ->
+            match (command, commands.Head) with
+            | (Turn m, Turn n) -> (simplyfiedCommands @ [ Turn(m + n) ], commands |> List.tail)
+            | (Step m, Step n) -> (simplyfiedCommands @ [ Step(m + n) ], commands |> List.tail)
+            | _, _ -> (simplyfiedCommands @ [ command ], commands |> List.tail))
+        ([], commandList)
+    |> fst
