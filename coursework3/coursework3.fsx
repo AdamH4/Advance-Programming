@@ -200,14 +200,20 @@ let matchLoop (m: int, n: int) (state: State) (index: int) : State =
     match index % 2 with
     | 0 ->
         match m with
-        | 0 -> state
+        | 0 ->
+            { direction = turn state.direction
+              position = state.position
+              history = state.history }
         | _ ->
             { direction = turn state.direction
               position = getPosition m state.position state.direction
               history = state.position :: state.history }
     | _ ->
         match n with
-        | 0 -> state
+        | 0 ->
+            { direction = turn state.direction
+              position = state.position
+              history = state.history }
         | _ ->
             { direction = turn state.direction
               position = getPosition n state.position state.direction
@@ -230,6 +236,18 @@ let performCommand (c: Command) (s: State) : State =
               position = s.position
               history = s.history }
     | Loop (m, n) -> [ 0 .. 3 ] |> List.fold (matchLoop (m, n)) s
+
+
+// let initialState =
+//     { position = 0, 0
+//       direction = N
+//       history = [] }
+
+// let command = Loop(3, 0)
+
+// let newState = performCommand command initialState
+
+// printfn "%A" newState
 
 
 
