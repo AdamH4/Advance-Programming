@@ -187,44 +187,49 @@ let step (d: Dir) (xy: XY) : XY =
 //
 // The history is represented so that the most recent item is at the head.
 
+let modBy x m = (x % m + m) % m
+
+let modByFour x = modBy x 4
+
+let getPosition (steps: int) (position: XY) (direction: Dir) : XY =
+    match steps < 0 with
+    | true -> (iterate (abs steps) (step (iterate 2 turn direction))) position
+    | _ -> (iterate steps (step direction)) position
+
 let matchLoop (m: int, n: int) (state: State) (index: int) : State =
     match index % 2 with
     | 0 ->
-        { direction = turn state.direction
-          position = (iterate m (step state.direction)) state.position
-          history = state.position :: state.history }
+        match m with
+        | 0 -> state
+        | _ ->
+            { direction = turn state.direction
+              position = getPosition m state.position state.direction
+              history = state.position :: state.history }
     | _ ->
-        { direction = turn state.direction
-          position = (iterate n (step state.direction)) state.position
-          history = state.position :: state.history }
+        match n with
+        | 0 -> state
+        | _ ->
+            { direction = turn state.direction
+              position = getPosition n state.position state.direction
+              history = state.position :: state.history }
 
-// TODO POJEBANE ZAPORNE CISLA
 let performCommand (c: Command) (s: State) : State =
     match c with
     | Step n ->
-        { direction = s.direction
-          position = (iterate n (step s.direction)) s.position
-          history = s.position :: s.history }
+        match n with
+        | 0 -> s
+        | _ ->
+            { direction = s.direction
+              position = getPosition n s.position s.direction
+              history = s.position :: s.history }
     | Turn n ->
-        { direction = iterate n turn s.direction
-          position = step s.direction s.position
-          history = s.history }
+        match n with
+        | 0 -> s
+        | _ ->
+            { direction = iterate (modByFour n) turn s.direction
+              position = s.position
+              history = s.history }
     | Loop (m, n) -> [ 0 .. 3 ] |> List.fold (matchLoop (m, n)) s
-
-// let firstStep =
-//     (iterate m (step s.direction)) s.position
-// let firstTurn = turn s.direction
-// let secondStep = (iterate n (step firstTurn)) firstStep
-// let secondTurn = turn firstTurn
-// let thirdStep = (iterate m (step secondTurn)) secondStep
-// let thirdTurn = turn secondTurn
-// let fourthStep = (iterate n (step thirdTurn)) thirdStep
-// let fourthTurn = turn thirdTurn
-// { direction = s.direction
-//   position = s.position
-//   history =
-//       fourthStep
-//   :: thirdStep :: secondStep :: firstStep :: s.history }
 
 
 
