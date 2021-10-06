@@ -236,19 +236,6 @@ let performCommand (c: Command) (s: State) : State =
     | Loop (m, n) -> [ 0 .. 3 ] |> List.fold (matchLoop (m, n)) s
 
 
-// let initialState =
-//     { position = 0, 0
-//       direction = N
-//       history = [] }
-
-// let command = Loop(3, 0)
-
-// let newState = performCommand command initialState
-
-// printfn "%A" newState
-
-
-
 // 3. Define the function
 //
 // perform : Command list -> State -> State
@@ -376,12 +363,6 @@ let unpackLoops (commands: Command list) : Command list =
 //   a sequence of Step or a sequence of Turn moves. If the next move
 //   you see is of a different kind, then you first simplify this part,
 //   add it to the simplified part and then continue.
-
-// let areCommandsSameType (first: Command) (second: Command) : bool =
-//     match (first, second) with
-//     | (Turn _, Turn _) -> true
-//     | (Step _, Step _) -> true
-//     | _,_ -> false
 
 let simplifyFold (command: Command) (state: Command list) : Command list =
     match (command, state) with
