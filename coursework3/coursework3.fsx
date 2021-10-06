@@ -199,22 +199,20 @@ let getPosition (steps: int) (position: XY) (direction: Dir) : XY =
 let matchLoop (m: int, n: int) (state: State) (index: int) : State =
     match index % 2 with
     | 0 ->
-        match m with
-        | 0 ->
+        if m = 0 then
             { direction = turn state.direction
               position = state.position
               history = state.history }
-        | _ ->
+        else
             { direction = turn state.direction
               position = getPosition m state.position state.direction
               history = state.position :: state.history }
     | _ ->
-        match n with
-        | 0 ->
+        if n = 0 then
             { direction = turn state.direction
               position = state.position
               history = state.history }
-        | _ ->
+        else
             { direction = turn state.direction
               position = getPosition n state.position state.direction
               history = state.position :: state.history }
@@ -385,13 +383,14 @@ let unpackLoops (commands: Command list) : Command list =
 //     | (Step _, Step _) -> true
 //     | _,_ -> false
 
+let simplifyFold (command: Command) (state: Command list) : Command list =
+    match (command, state) with
+    | (Step n, Step k :: rest) -> Step(n + k) :: rest
+    | (Turn n, Turn k :: rest) -> Turn(modByFour (n + k)) :: rest
+    | (_, _) ->
+        match command with
+        | Turn n -> Turn(modByFour n) :: state
+        | _ -> command :: state
+
 let simplify (commandList: Command list) : Command list =
-    commandList
-    |> List.fold
-        (fun ((simplyfiedCommands, commands): Command list * Command list) (command: Command) ->
-            match (command, commands.Head) with
-            | (Turn m, Turn n) -> (simplyfiedCommands @ [ Turn(m + n) ], commands |> List.tail)
-            | (Step m, Step n) -> (simplyfiedCommands @ [ Step(m + n) ], commands |> List.tail)
-            | _, _ -> (simplyfiedCommands @ [ command ], commands |> List.tail))
-        ([], commandList)
-    |> fst
+    List.foldBack simplifyFold commandList []
