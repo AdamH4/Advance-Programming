@@ -54,16 +54,10 @@ operations on this representation.
 
 type Name = string
 
-type Number =
-    | Int of int
-    | Float of float
-    | Double of double
-
-
 type Value =
-    | Object of Map<Name, Value>
+    | Object of (Name * Value) list
     | List of Value list
-    | Number of Number
+    | Number of float
     | String of string
     | Boolean of bool
     | Empty
@@ -92,7 +86,7 @@ that creates a representation for an empty object structure.
 *)
 
 // TODO takto to nemoze byt
-let mkObject () : Ecma = Object(Map.empty)
+let mkObject () : Ecma = Object([])
 
 (*
 Define the function
@@ -102,7 +96,7 @@ Define the function
 that creates a representation for the given floating-point number.
 *)
 
-let mkNumber (num: float) : Ecma = Number(Float num)
+let mkNumber (num: float) : Ecma = Number num
 
 (*
 Define the function
@@ -165,7 +159,7 @@ let mkNull () : Ecma = Empty
 
 let addNameValue (n: Name, v: Ecma) (e: Ecma) : Ecma =
     match e with
-    | Object object -> Object(object |> Map.add n v)
+    | Object object -> Object(object @ [ n, v ])
     | _ -> e
 
 
@@ -211,18 +205,13 @@ let addValue (v: Ecma) (e: Ecma) =
 
 let rec countValues (e: Ecma) : int =
     match e with
-    | List list when list.Length > 0 ->
-        1
-        + (list
-           |> List.fold (fun state item -> state + countValues item) 0)
-    | Object map when map.Count > 0 ->
-        1
-        + (map
-           |> Map.fold (fun state _ value -> state + countValues value) 0)
-    | Empty -> 0
+    | List list ->
+        (list
+         |> List.fold (fun state item -> state + countValues item) 1)
+    | Object object ->
+        (object
+         |> List.fold (fun state item -> state + countValues (snd item)) 1)
     | _ -> 1
-
-
 
 //// Task 4 ////
 
@@ -277,21 +266,10 @@ type Path = Name list
 //
 // Note that the empty list denotes the path to the root object.
 
-// let matchKeys (key: Name) (value: Value) : Path list =
-//   match value with
-//   | Object map -> listPaths map
-
 let rec listPaths (e: Ecma) : Path list = []
 // match e with
-// | Object map ->
-//     map |> Map.fold
-
-//     (fun state key value ->
-//         match value with
-//         | Object map -> listPaths (Object map)
-//         | List list -> state @ [ key ]
-//         | _ -> [])
-//         []
+// | Object map -> map |> Map.fold (fun state key value -> match value with) []
+// | List list -> []
 // | _ -> []
 
 
@@ -352,4 +330,4 @@ let delete (paths: Path list) (e: Ecma) : Ecma = Empty
 // The result list must respect the ordering requirements from Task 4.
 
 
-let withPath (paths: Path list) (e: Ecma) : Ecma list = [ Empty ]
+let withPath (paths: Path list) (e: Ecma) : Ecma list = []
