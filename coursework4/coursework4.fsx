@@ -85,9 +85,12 @@ Define the function
 that creates a representation for an empty object structure.
 *)
 
-// TODO takto to nemoze byt
-let mkObject () : Ecma = Object([])
+let mkObject () : Ecma = Object []
 
+// match mkObject () with
+// | Object _ -> printfn "%s" "Object"
+// | List _ -> printfn "%s" "List"
+// | _ -> printfn "%s" "else"
 (*
 Define the function
 
@@ -210,7 +213,7 @@ let rec countValues (e: Ecma) : int =
          |> List.fold (fun state item -> state + countValues item) 1)
     | Object object ->
         (object
-         |> List.fold (fun state item -> state + countValues (snd item)) 1)
+         |> List.fold (fun state (_, value) -> state + countValues value) 1)
     | _ -> 1
 
 //// Task 4 ////
@@ -266,14 +269,159 @@ type Path = Name list
 //
 // Note that the empty list denotes the path to the root object.
 
-let rec listPaths (e: Ecma) : Path list = []
-// match e with
-// | Object map -> map |> Map.fold (fun state key value -> match value with) []
-// | List list -> []
-// | _ -> []
+// let capitals =
+//     [ "abc", Boolean false
+//       "xs",
+//       List(
+//           [ Object([ "a", String "a" ])
+//             Number 1.0
+//             Boolean true
+//             Object([ "b", String "b" ])
+//             Boolean false ]
+//       )
+//       "xyz",
+//       Object(
+//           [ "a", Number 1.0
+//             "b", Object([ "b", String "b" ]) ]
+//       )
+//       "ws", List([ Boolean false ]) ]
+
+// let c =
+//     [ "xyz",
+//       Object(
+//           [ "a", Number 1.0
+//             "b", Object([ "b", String "b" ]) ]
+//       ) ]
+
+// let e: Ecma = Object(capitals)
+
+// let rec traverseEcma (ecma: Ecma) : Path =
+//     match ecma with
+//     | Object object ->
+//         match object.Length = 0 with
+//         | true -> []
+//         | _ ->
+//             fst object.Head
+//             :: traverseEcma (Object object.Tail)
+//     | List list ->
+//         match list.Length = 0 with
+//         | true -> []
+//         | _ ->
+//             traverseEcma list.Head
+//             @ traverseEcma (List list.Tail)
+//     | _ -> []
 
 
+// let rec listPaths (e: Ecma) : Path list =
+//     match e with
+//     | Object object ->
+//         object
+//         |> List.fold
+//             (fun state (key, value) ->
+//                 match value with
+//                 | List list -> state @ [ key :: traverseEcma (List list) ]
+//                 | Object ob -> state @ [ key :: traverseEcma (Object ob) ]
+//                 | _ -> state @ [ [ key ] ])
+//             []
+//     | List list ->
+//         list
+//         |> List.fold
+//             (fun state value ->
+//                 match value with
+//                 | List list -> state @ [ traverseEcma (List list) ]
+//                 | Object ob -> state @ [ traverseEcma (Object ob) ]
+//                 | _ -> state)
+//             []
+//     | _ -> [ [] ]
 
+// let rec findRest (ecma: Ecma) : Path list =
+//     match ecma with
+//     | Object o ->
+//         match o with
+//         | start :: rest -> [ [ fst start ] ] @ findRest (Object rest)
+//         | _ -> []
+//     | List l ->
+//         match l with
+//         | start :: rest -> findRest start @ findRest (List rest)
+//         | _ -> []
+//     | _ -> []
+
+// let rec loopEcma (e: Ecma) : Path list =
+//     match e with
+//     | Object object ->
+//         match object with
+//         | (name, value) :: tail ->
+//             [ name ] :: findRest value
+//             @ loopEcma (Object tail)
+//         | _ -> []
+//     | List list ->
+//         match list with
+//         | head :: tail -> loopEcma head @ loopEcma (List tail)
+//         | _ -> []
+//     | _ -> []
+
+let listPaths (e: Ecma) : Path list =
+    let rec innerlistPaths (e: Ecma) (prefix: Path) : Path list =
+        match e with
+        | Object ((name, value) :: rest) ->
+            let newPrefix: Path = prefix @ [ name ]
+
+            [ newPrefix ]
+            @ innerlistPaths value newPrefix
+              @ innerlistPaths (Object rest) prefix
+        | List (head :: rest) ->
+            innerlistPaths head prefix
+            @ innerlistPaths (List rest) prefix
+        | _ -> []
+
+    [] :: innerlistPaths e []
+
+// listPaths e
+
+// let rec listPaths (e: Ecma) : Path list =
+//     match e with
+//     | Object object ->
+//         object
+//         |> List.fold (fun state item -> state @ [ [ fst item ] ] @ listPaths (snd item)) []
+//     | List list ->
+//         list
+//         |> List.fold (fun state value -> state @ listPaths value) []
+//     | _ -> [ [] ]
+
+// listPaths e
+// let rec lappend (state: Path list) (ecma: Ecma) : Path list =
+//     match state, ecma with
+//     | head :: tail, Object object ->
+//         match object.Length = 0 with
+//         | true -> []
+//         | _ ->
+//             let start = object.Head
+//             let newItem: Path list = [ head @ [ fst start ] ]
+//             printfn "%A" object.Head
+//             printfn "%A" object.Tail
+//             let newList = newItem @ tail
+//             printfn "%A" newItem
+
+//             newList
+//             @ (lappend newList (snd start))
+//               @ (lappend newList (Object object.Tail))
+//     | x, List (start :: rest) -> (lappend x start) @ (lappend x (List rest))
+//     | _, _ -> state
+
+// let listPaths (e: Ecma) : Path list =
+//     match e with
+//     | Object object ->
+//         object
+//         |> List.fold (fun state item -> lappend state (Object [ item ])) [ [] ]
+//         |> List.distinct
+//     | _ -> [ [] ]
+
+
+// let listPaths (e: Ecma) : Path list =
+//     match e with
+//     | Object object -> object |> List.fold (fun state item -> traverse) []
+//     | List list -> []
+//     | _ -> [ [] ]
 //// Task 5 ////
 
 // Define the function
@@ -288,8 +436,37 @@ let rec listPaths (e: Ecma) : Path list = []
 // whitespace was part of a name or a string value.
 
 
+// TODO refactor and rename things
+let rec show (ecma: Ecma) =
+    match ecma with
+    | Object o -> objectToJson o
+    | List l -> listToJson l
+    | Boolean b -> b.ToString().ToLower()
+    | Number n -> n.ToString()
+    | String t -> "\"" + t + "\""
+    | Empty -> "null"
 
-let show (e: Ecma) : string = ""
+and objectToJson (object: list<Name * Ecma>) =
+    match object with
+    | [] -> "{}"
+    | _ ->
+        "{\""
+        + fst object.Head
+        + "\":"
+        + show (snd (object.Head))
+        + (object.Tail
+           |> List.fold (fun res (name, e) -> res + "," + "\"" + name + "\":" + show e) "")
+        + "}"
+
+and listToJson (list: list<Ecma>) =
+    match list with
+    | [] -> "[]"
+    | _ ->
+        "["
+        + show (list.Head)
+        + (list.Tail
+           |> List.fold (fun res e -> res + "," + show e) "")
+        + "]"
 
 
 
@@ -309,10 +486,66 @@ let show (e: Ecma) : string = ""
 // When the user attempts to delete the root object, delete should throw
 // an exception. Hint: use `failwith` in the appropriate case.
 
+// let traverse (ecma: Value) (path: Path) : Value =
 
-let delete (paths: Path list) (e: Ecma) : Ecma = Empty
+
+let rec folder (ecma: Ecma) (path: Path) : Ecma =
+    match ecma with
+    | Object object ->
+        match path.Length = 1 with
+        | true ->
+            Object(
+                object
+                |> List.filter (fun (name, _) -> name <> path.Item(0))
+            )
+        | _ ->
+            folder
+                (object
+                 |> List.find (fun (name, _) -> path.Head = name)
+                 |> snd)
+                path.Tail
+    | _ -> ecma
 
 
+let rec helper (e1: Ecma) (path: Path) (e2: Ecma) : Ecma =
+    match e1, e2 with
+    | Object e, Object result ->
+        match path.Length = 1 with
+        | true ->
+            Object(
+                e
+                |> List.filter (fun (name, _) -> name <> path.Item(0))
+                |> List.append result
+            )
+        | _ ->
+
+            let nextLayer =
+                (e
+                 |> List.find (fun (name, _) -> path.Head = name)
+                 |> snd)
+
+            let keep =
+                match nextLayer with
+                | Object next ->
+                    next
+                    |> List.filter (fun (name, _) -> path.Head <> name)
+                | List _ -> []
+                | _ -> []
+
+            let nieco =
+                helper nextLayer path.Tail (Object result)
+
+            match nieco with
+            | Object goal -> Object(result @ keep @ goal)
+            | _ -> e1
+    | _ -> e1
+
+
+let delete (paths: Path list) (e: Ecma) : Ecma =
+    paths
+    |> List.fold (fun state item -> helper e item state) (Object [])
+
+// delete [ [ "xyz"; "a" ] ] (Object capitals)
 
 //// Task 7 ////
 
@@ -329,5 +562,30 @@ let delete (paths: Path list) (e: Ecma) : Ecma = Empty
 //
 // The result list must respect the ordering requirements from Task 4.
 
+// let appendToObjectEnd (e: Ecma) (path: Path) (key: Name, value: Value) : Ecma =
+//     match e with
+//     | Object (head :: tail) ->
+//         match path with
+//         | start :: rest ->
+//             match (fst head) = start with
+//             | true -> addNameValue
+//             | _ -> e
+//     | _ -> e
 
-let withPath (paths: Path list) (e: Ecma) : Ecma list = []
+let appendToFinalEcma (state: Ecma, e: Ecma) (key: Name) : (Ecma * Ecma) =
+    match e with
+    | Object object ->
+        let keep =
+            object |> List.find (fun (name, _) -> name = key)
+
+        addNameValue keep state, (Object [ keep ])
+    | _ -> state, e
+
+let traverse (path: Path) (e: Ecma) : Ecma =
+    path
+    |> List.fold appendToFinalEcma (mkObject (), e)
+    |> fst
+
+let withPath (paths: Path list) (e: Ecma) : Ecma list =
+    paths
+    |> List.fold (fun state path -> state @ [ traverse path e ]) []
