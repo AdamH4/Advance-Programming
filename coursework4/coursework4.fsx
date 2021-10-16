@@ -489,61 +489,61 @@ and listToJson (list: list<Ecma>) =
 // let traverse (ecma: Value) (path: Path) : Value =
 
 
-let rec folder (ecma: Ecma) (path: Path) : Ecma =
-    match ecma with
-    | Object object ->
-        match path.Length = 1 with
-        | true ->
-            Object(
-                object
-                |> List.filter (fun (name, _) -> name <> path.Item(0))
-            )
-        | _ ->
-            folder
-                (object
-                 |> List.find (fun (name, _) -> path.Head = name)
-                 |> snd)
-                path.Tail
-    | _ -> ecma
+// let rec folder (ecma: Ecma) (path: Path) : Ecma =
+//     match ecma with
+//     | Object object ->
+//         match path.Length = 1 with
+//         | true ->
+//             Object(
+//                 object
+//                 |> List.filter (fun (name, _) -> name <> path.Item(0))
+//             )
+//         | _ ->
+//             folder
+//                 (object
+//                  |> List.find (fun (name, _) -> path.Head = name)
+//                  |> snd)
+//                 path.Tail
+//     | _ -> ecma
 
 
-let rec helper (e1: Ecma) (path: Path) (e2: Ecma) : Ecma =
-    match e1, e2 with
-    | Object e, Object result ->
-        match path.Length = 1 with
-        | true ->
-            Object(
-                e
-                |> List.filter (fun (name, _) -> name <> path.Item(0))
-                |> List.append result
-            )
-        | _ ->
+// let rec helper (e1: Ecma) (path: Path) (e2: Ecma) : Ecma =
+//     match e1, e2 with
+//     | Object e, Object result ->
+//         match path.Length = 1 with
+//         | true ->
+//             Object(
+//                 e
+//                 |> List.filter (fun (name, _) -> name <> path.Item(0))
+//                 |> List.append result
+//             )
+//         | _ ->
 
-            let nextLayer =
-                (e
-                 |> List.find (fun (name, _) -> path.Head = name)
-                 |> snd)
+//             let nextLayer =
+//                 (e
+//                  |> List.find (fun (name, _) -> path.Head = name)
+//                  |> snd)
 
-            let keep =
-                match nextLayer with
-                | Object next ->
-                    next
-                    |> List.filter (fun (name, _) -> path.Head <> name)
-                | List _ -> []
-                | _ -> []
+//             let keep =
+//                 match nextLayer with
+//                 | Object next ->
+//                     next
+//                     |> List.filter (fun (name, _) -> path.Head <> name)
+//                 | List _ -> []
+//                 | _ -> []
 
-            let nieco =
-                helper nextLayer path.Tail (Object result)
+//             let nieco =
+//                 helper nextLayer path.Tail (Object result)
 
-            match nieco with
-            | Object goal -> Object(result @ keep @ goal)
-            | _ -> e1
-    | _ -> e1
+//             match nieco with
+//             | Object goal -> Object(result @ keep @ goal)
+//             | _ -> e1
+//     | _ -> e1
 
 
-let delete (paths: Path list) (e: Ecma) : Ecma =
-    paths
-    |> List.fold (fun state item -> helper e item state) (Object [])
+let delete (paths: Path list) (e: Ecma) : Ecma = Object []
+// paths
+// |> List.fold (fun state item -> helper e item state) (Object [])
 
 // delete [ [ "xyz"; "a" ] ] (Object capitals)
 
