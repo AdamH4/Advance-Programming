@@ -572,20 +572,20 @@ let delete (paths: Path list) (e: Ecma) : Ecma =
 //             | _ -> e
 //     | _ -> e
 
-let appendToFinalEcma (state: Ecma, e: Ecma) (key: Name) : (Ecma * Ecma) =
-    match e with
-    | Object object ->
-        let keep =
-            object |> List.find (fun (name, _) -> name = key)
+// let appendToFinalEcma (state: Ecma, e: Ecma) (key: Name) : (Ecma * Ecma) =
+//     match e with
+//     | Object object ->
+//         let keep =
+//             object |> List.find (fun (name, _) -> name = key)
 
-        addNameValue keep state, (Object [ keep ])
-    | _ -> state, e
+//         addNameValue keep state, (Object [ keep ])
+//     | _ -> state, e
 
-let traverse (path: Path) (e: Ecma) : Ecma =
-    path
-    |> List.fold appendToFinalEcma (mkObject (), e)
-    |> fst
+// let traverse (path: Path) (e: Ecma) : Ecma =
+//     path
+//     |> List.fold appendToFinalEcma (mkObject (), e)
+//     |> fst
 
-let withPath (paths: Path list) (e: Ecma) : Ecma list =
-    paths
-    |> List.fold (fun state path -> state @ [ traverse path e ]) []
+let withPath (paths: Path list) (e: Ecma) : Ecma list = []
+// paths
+// |> List.fold (fun state path -> state @ [ traverse path e ]) []
