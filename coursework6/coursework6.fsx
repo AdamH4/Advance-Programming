@@ -55,7 +55,7 @@ let rec pHoldsForAllSequentialElements (p: int -> int -> bool) (list: int list) 
     match list with
     | first :: second :: rest when p first second ->
         if rest.IsEmpty then
-            false
+            true
         else
             pHoldsForAllSequentialElements p rest
     | _ -> false
