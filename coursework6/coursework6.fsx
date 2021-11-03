@@ -53,11 +53,10 @@
 *)
 let rec pHoldsForAllSequentialElements (p: int -> int -> bool) (list: int list) : bool =
     match list with
-    | first :: second :: rest when p first second ->
-        if rest.IsEmpty then
-            true
-        else
-            pHoldsForAllSequentialElements p rest
+    | first :: (second :: rest) as tail when p first second ->
+        match rest with
+        | [] -> true
+        | _ -> pHoldsForAllSequentialElements p tail
     | _ -> false
 
 (*
@@ -103,9 +102,10 @@ let createTwoTuplesOfListFold (postfix: 'a) (input: 'a list) : ('a * 'a) list =
         ([], false, [])
     |> first
 
-// let x = []
-// x
-// createTwoTuplesOfListFold 2 x
+let x = [ [ 1; 2; 3 ]; [ 4; 5; 6 ] ]
+
+x
+createTwoTuplesOfListFold [ 10; 11 ] x
 (*
   Task 4:
 
