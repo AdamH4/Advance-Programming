@@ -53,7 +53,7 @@
 *)
 let rec pHoldsForAllSequentialElements (p: int -> int -> bool) (list: int list) : bool =
     match list with
-    | first :: (second :: rest) as tail when p first second ->
+    | first :: ((second :: rest) as tail) when p first second ->
         match rest with
         | [] -> true
         | _ -> pHoldsForAllSequentialElements p tail
@@ -93,12 +93,13 @@ let createTwoTuplesOfListFold (postfix: 'a) (input: 'a list) : ('a * 'a) list =
         else
             input @ [ postfix ]
 
-    newInput
-    |> List.fold
-        (fun (result, decision, buffer: 'a list) item ->
+
+    List.foldBack
+        (fun item (result: ('a * 'a) list, decision, buffer: 'a list) ->
             match decision with
-            | true -> (result @ [ (buffer.Head, item) ], false, [])
-            | false -> (result, true, buffer @ [ item ]))
+            | true -> ((buffer.Head, item) :: result, false, [])
+            | false -> (result, true, item :: buffer))
+        (List.rev newInput)
         ([], false, [])
     |> first
 
