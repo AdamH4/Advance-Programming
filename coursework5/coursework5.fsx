@@ -320,7 +320,8 @@ let b3 = Or(HasStringValue "b3", HasKey "b3")
 let s1 =
     Sequence(Match True, Sequence(Match True, Match(HasKey("abc"))))
 
-let s2 = OneOrMore(Match(HasStringValue("xyz")))
+let s2 =
+    Sequence(OneOrMore(Match(HasStringValue("xyz"))), Match True)
 
 let s3 =
     Sequence(Match(Not(HasStringValue "xyz")), Match True)
@@ -347,8 +348,6 @@ let contains (list: 'b list) (item: 'b) : bool = list |> List.contains item
 let keyExists (list: (string * 'a) list) (key: string) : bool =
     list |> List.exists (fun (name, _) -> name = key)
 
-let generalizedMathObject (object: (Name * Value) list) (item: 'a) : bool = false
-
 let rec eval (expression: BExpr) (e: Ecma) : bool =
     match expression with
     | True -> true
@@ -365,29 +364,26 @@ let rec eval (expression: BExpr) (e: Ecma) : bool =
         | List list -> contains list (String string)
         | Object object ->
             object
-            |> List.exists
-                (fun (_, value) ->
-                    match value with
-                    | String s -> s = string
-                    | _ -> false)
+            |> List.exists (fun (_, value) ->
+                match value with
+                | String s -> s = string
+                | _ -> false)
         | _ -> false
     | HasNumericValueInRange (xmin, xmax) ->
         match e with
         | Number n -> n <= xmax && n >= xmin
         | List list ->
             list
-            |> List.exists
-                (fun item ->
-                    match item with
-                    | Number n -> n <= xmax && n >= xmin
-                    | _ -> false)
+            |> List.exists (fun item ->
+                match item with
+                | Number n -> n <= xmax && n >= xmin
+                | _ -> false)
         | Object object ->
             object
-            |> List.exists
-                (fun (_, value) ->
-                    match value with
-                    | Number n -> n <= xmax && n >= xmin
-                    | _ -> false)
+            |> List.exists (fun (_, value) ->
+                match value with
+                | Number n -> n <= xmax && n >= xmin
+                | _ -> false)
         | _ -> false
     | HasBoolValue bool ->
         match e with
@@ -395,11 +391,10 @@ let rec eval (expression: BExpr) (e: Ecma) : bool =
         | List list -> contains list (Boolean bool)
         | Object object ->
             object
-            |> List.exists
-                (fun (_, value) ->
-                    match value with
-                    | Boolean b -> b = bool
-                    | _ -> false)
+            |> List.exists (fun (_, value) ->
+                match value with
+                | Boolean b -> b = bool
+                | _ -> false)
         | _ -> false
     | HasNull ->
         match e with
@@ -407,11 +402,10 @@ let rec eval (expression: BExpr) (e: Ecma) : bool =
         | List list -> contains list Empty
         | Object object ->
             object
-            |> List.exists
-                (fun (_, value) ->
-                    match value with
-                    | Empty -> true
-                    | _ -> false)
+            |> List.exists (fun (_, value) ->
+                match value with
+                | Empty -> true
+                | _ -> false)
         | _ -> false
 
 
@@ -473,10 +467,14 @@ type Path = Description list
 
 
 
-let select (selector: Selector) (e: Ecma) : (Path * Ecma) list = 
-    match selector with
-    | Match expression -> 
-
+// let rec select (selector: Selector) (e: Ecma) = // : (Path * Ecma) list =
+//     match selector with
+//     | Match expression ->
+//         match e with
+//         | Object (head :: tail) ->
+//             eval expression (Object [ head ])
+//             :: [ eval expression (Object tail) ]
+//     | _ -> [ false ]
 
 
 
@@ -499,7 +497,7 @@ let select (selector: Selector) (e: Ecma) : (Path * Ecma) list =
 // for the values selected by s, the string values and numeric values
 // of that value have been updated according to the functions su and nu.
 
-
+let update (su: (string -> string)) (nu: (float -> float)) (s: Selector) (e: Ecma) : Ecma = e
 
 
 
@@ -550,9 +548,17 @@ let select (selector: Selector) (e: Ecma) : (Path * Ecma) list =
 // These functions should not be defined recursively; define them in
 // terms of update.
 
+let toZero (x: float) (s: Selector) (e: Ecma) : Ecma =
+    let nu (number: float) : float =
+        if number >= -x && number <= x then
+            0.0
+        else
+            number
 
+    update id nu s e
 
-
+// let truncate (n: int) (s: Selector) (e: Ecma) =
+//     let su (string: string) : string = String.
 
 
 
