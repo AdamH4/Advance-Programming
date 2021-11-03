@@ -84,8 +84,6 @@ let rec pHoldsForAllSequentialElements (p: int -> int -> bool) (list: int list) 
   Test yourself if this implementation appears to be tail recursive.
 *)
 
-let first (a, _, _) = a
-
 let createTwoTuplesOfListFold (postfix: 'a) (input: 'a list) : ('a * 'a) list =
     let newInput =
         if input.Length % 2 = 0 then
@@ -93,20 +91,23 @@ let createTwoTuplesOfListFold (postfix: 'a) (input: 'a list) : ('a * 'a) list =
         else
             input @ [ postfix ]
 
-
     List.foldBack
-        (fun item (result: ('a * 'a) list, decision, buffer: 'a list) ->
-            match decision with
-            | true -> ((buffer.Head, item) :: result, false, [])
-            | false -> (result, true, item :: buffer))
-        (List.rev newInput)
-        ([], false, [])
-    |> first
+        (fun item (result, buffer: 'a list) ->
+            match buffer with
+            | [ x ] -> ((item, x) :: result, [])
+            | _ -> (result, [ item ]))
+        newInput
+        ([], [])
+    |> fst
 
-let x = [ [ 1; 2; 3 ]; [ 4; 5; 6 ] ]
+// let x =
+//     [ [ 1; 2; 3 ]
+//       [ 4; 5; 6 ]
+//       [ 7; 8; 9 ] ]
 
-x
-createTwoTuplesOfListFold [ 10; 11 ] x
+// x
+// createTwoTuplesOfListFold [ 10; 11 ] x
+
 (*
   Task 4:
 
