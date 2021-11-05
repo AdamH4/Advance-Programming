@@ -79,10 +79,6 @@ let createTwoTuplesOfList (postfix: 'a) (input: 'a list) : ('a * 'a) list =
 
   inner postfix input []
 
-let x = [  1; 2; 3; 4; 5 ]
-
-x
-createTwoTuplesOfList 10 x
 (*
   Task 3:
 
@@ -111,14 +107,6 @@ let createTwoTuplesOfListFold (postfix: 'a) (input: 'a list) : ('a * 'a) list =
         newInput
         ([], [])
     |> fst
-
-// let x =
-//     [ [ 1; 2; 3 ]
-//       [ 4; 5; 6 ]
-//       [ 7; 8; 9 ] ]
-
-// x
-// createTwoTuplesOfListFold [ 10; 11 ] x
 
 (*
   Task 4:
@@ -149,74 +137,5 @@ let medianAndAverageInTree (tree: int Tr): int * float =
     | Lf l -> f (1, l, [l])
     | Br (tl, tr) -> inner tl (fun (countL, valL, listLeft) -> inner tr (fun (countR, valR, listRight) -> f(countL + countR, valL + valR, listLeft @ listRight)))
   let (count, sum, list) =  inner tree id 
+
   (list.[(count - 1) / 2], float(sum) / float(count))
-
-// let treeee = Br(Lf 1, Br(Lf 3, Lf 4))
-// let sk = medianAndAverageInTree treeee
-
-// printfn "%A" sk
-
-
-(*----------------------------------------- MIN & MAX-----------------------------------------------------------------------*)
-// type 'a Tree =
-//   | Tip   of 'a
-//   | Node of 'a Tree * 'a Tree
-
-
-// let rec minAndMaxInTree' cont (tree: int Tree) =
-//   match tree with
-//   | Tip(a) -> cont (a, a)
-//   | Node(a, b) -> 
-//     minAndMaxInTree' ( fun (lmn, lmx) -> minAndMaxInTree' ( fun (rmn, rmx) -> cont ((min lmn rmn), (max lmx rmx))) b) a
-
-
-(*-----------------------------------------------------MEDIAN---------------------------------------------------------*)
-
-// type 'a Tree =
-//   | Leaf of 'a
-//   | Branch of 'a Tree * 'a Tree
-
-// let rec count b cont = 
-//   match b with
-//   | Leaf(_) -> cont(1)
-//   | Branch (at, bt) -> count at (fun asum -> count bt (fun bsum -> cont (asum + bsum)))
-
-// let rec getLastLeaf branch =
-//   match branch with
-//   | Leaf (a) -> a
-//   | Branch (_, bt) -> getLastLeaf bt
-
-// let getLeafNo branch cnt =
-//   let rec getLeafNoRec branch (cnt, ans) =
-//     if cnt = 0 then (cnt, ans)
-//     else
-//     match branch with
-//     | Leaf (a) -> (cnt-1, a)
-//     | Branch (at, bt) -> getLeafNoRec bt (getLeafNoRec at (cnt, ans))
-//   snd (getLeafNoRec branch (cnt, 0.0))
-
-// let medianInTree tree =
-//   match tree with
-//   | Leaf a -> a
-//   | Branch (at, bt) -> 
-//                        let aCount = count at id
-//                        let bCount = count bt id
-//                        if at = bt then getLastLeaf at
-//                        else if aCount > bCount then getLeafNo at ((aCount + bCount) / 2)
-//                        else getLeafNo bt (bCount - ((aCount + bCount) / 2))
-
-// // let asd : float Tree = (Branch(Branch(Leaf(1.0), Branch(Leaf(1.1), Leaf(1.2))), Branch(Branch(Leaf(2.1), Branch(Leaf(2.2), Leaf(2.3))), Leaf(2.0))))
-// // medianInTree asd
-// // count asd (id)
-// // getLeafNo asd (3, 0.0)
-
-
-// (*------------------------------------------------KSMADK AMSD M---------------------------------------------*)
-// let medianInTree22 tr = 
-//   let rec lister n cllb =
-//     match n with
-//     | Lf x -> cllb([x])
-//     | Br (left, right) -> lister left (fun v -> v @ (lister right cllb))
-//   let values = lister tr id
-//   let mid = (values.Length - 1) / 2
-//   values.[mid]
