@@ -70,7 +70,19 @@ let rec pHoldsForAllSequentialElements (p: int -> int -> bool) (list: int list) 
   function be the second element in the tuple.
   Make sure your implementation uses explicit tail recursion.
 *)
+let createTwoTuplesOfList (postfix: 'a) (input: 'a list) : ('a * 'a) list =
+  let rec inner (p: 'a) (i: 'a list) (acc: ('a * 'a) list) : ('a * 'a) list =
+    match i with
+    | first :: second :: rest -> inner p rest ((first, second) :: acc)
+    | [one] -> (one, p) :: acc |> List.rev
+    | [] -> acc |> List.rev
 
+  inner postfix input []
+
+let x = [  1; 2; 3; 4; 5 ]
+
+x
+createTwoTuplesOfList 10 x
 (*
   Task 3:
 
