@@ -638,4 +638,4 @@ let truncate (n: int) (s: Selector) (e: Ecma) : Ecma =
 // This function should not be defined recursively; define it in
 // terms of update.
 
-let mapEcma (su: string -> string) (nu: float -> float) (e: Ecma) : Ecma = update su nu (OneOrMore(Match True)) e
+let mapEcma (f: string -> string) (g: float -> float) (e: Ecma) : Ecma = update f g (OneOrMore(Match True)) e
