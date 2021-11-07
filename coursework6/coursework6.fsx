@@ -71,13 +71,13 @@ let rec pHoldsForAllSequentialElements (p: int -> int -> bool) (list: int list) 
   Make sure your implementation uses explicit tail recursion.
 *)
 let createTwoTuplesOfList (postfix: 'a) (input: 'a list) : ('a * 'a) list =
-  let rec inner (p: 'a) (i: 'a list) (acc: ('a * 'a) list) : ('a * 'a) list =
-    match i with
-    | first :: second :: rest -> inner p rest ((first, second) :: acc)
-    | [one] -> (one, p) :: acc |> List.rev
-    | [] -> acc |> List.rev
+    let rec inner (p: 'a) (i: 'a list) (acc: ('a * 'a) list) : ('a * 'a) list =
+        match i with
+        | first :: second :: rest -> inner p rest ((first, second) :: acc)
+        | [ one ] -> (one, p) :: acc |> List.rev
+        | [] -> acc |> List.rev
 
-  inner postfix input []
+    inner postfix input []
 
 (*
   Task 3:
@@ -131,11 +131,14 @@ type 'a Tr =
     | Br of 'a Tr * 'a Tr
 
 
-let medianAndAverageInTree (tree: int Tr): int * float =
-  let rec inner (tr: int Tr) f =
-    match tr with
-    | Lf l -> f (1, l, [l])
-    | Br (tl, tr) -> inner tl (fun (countL, valL, listLeft) -> inner tr (fun (countR, valR, listRight) -> f(countL + countR, valL + valR, listLeft @ listRight)))
-  let (count, sum, list) =  inner tree id 
+let medianAndAverageInTree (tree: int Tr) : int * float =
+    let rec inner (tr: int Tr) f =
+        match tr with
+        | Lf l -> f (1, l, [ l ])
+        | Br (tl, tr) ->
+            inner tl (fun (countL, valL, listLeft) ->
+                inner tr (fun (countR, valR, listRight) -> f (countL + countR, valL + valR, listLeft @ listRight)))
 
-  (list.[(count - 1) / 2], float(sum) / float(count))
+    let (count, sum, list) = inner tree id
+
+    (list.[(count - 1) / 2], float (sum) / float (count))
