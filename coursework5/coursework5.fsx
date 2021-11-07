@@ -408,29 +408,6 @@ let rec eval (expression: BExpr) (e: Ecma) : bool =
                 | _ -> false)
         | _ -> false
 
-
-let capitals =
-    Object(
-        [ "abc", Boolean false
-          "xs",
-          List(
-              [ Object([ "a", String "a" ])
-                Number 1.0
-                Boolean true
-                Object([ "b", String "b" ])
-                Boolean false ]
-          )
-          "xyz",
-          Object(
-              [ "a", Number 1.0
-                "b", Object([ "b", String "b" ]) ]
-          ) ]
-    )
-
-let vyber = HasKey "a"
-
-eval vyber capitals
-
 type Description =
     | Key of string
     | Index of int
@@ -467,17 +444,46 @@ type Path = Description list
 
 
 
-// let rec select (selector: Selector) (e: Ecma) = // : (Path * Ecma) list =
-//     match selector with
-//     | Match expression ->
-//         match e with
-//         | Object (head :: tail) ->
-//             eval expression (Object [ head ])
-//             :: [ eval expression (Object tail) ]
-//     | _ -> [ false ]
+let select (s: Selector) (e: Ecma) : (Path * Ecma) list =
+    let rec selectInner (s: Selector) (e: Ecma) (p: Path) : (Path * Ecma) list =
+        match s with
+        | Match expr -> if (eval expr e) then [ p, e ] else []
+        | Sequence (s, s') ->
+            let x = selectInner s e p
+
+            match x with
+            | [] -> []
+            | arr ->
+                arr
+                |> List.fold
+                    (fun resultList (p', e') ->
+                        resultList
+                        @ match e' with
+                          | Object o ->
+                              o
+                              |> List.fold (fun acc (key, value) -> acc @ (selectInner s' value (p' @ [ Key(key) ]))) []
 
 
+                          | List eArr ->
+                              fst (
+                                  eArr
+                                  |> List.fold
+                                      (fun (arrInner, i) el ->
+                                          (arrInner @ (selectInner s' el (p' @ [ Index(i) ])), i + 1))
+                                      ([], 0)
+                              )
+                          | _ -> selectInner s' e' p')
+                    []
+        | OneOrMore s ->
+            let x = selectInner s e p
 
+            x
+            @ match e with
+              | Object _ -> selectInner (Sequence(s, OneOrMore s)) e p
+              | List _ -> selectInner (Sequence(s, OneOrMore s)) e p
+              | _ -> []
+
+    selectInner s e []
 
 
 
@@ -496,8 +502,63 @@ type Path = Description list
 // evaluates to an Ecma that is otherwise the same as e except that,
 // for the values selected by s, the string values and numeric values
 // of that value have been updated according to the functions su and nu.
+let updateTextOrNumber (su: string -> string) (nu: float -> float) (e: Ecma) : Ecma =
+    match e with
+    | String t -> String(su t)
+    | Number n -> Number(nu n)
+    | _ -> e
 
-let update (su: (string -> string)) (nu: (float -> float)) (s: Selector) (e: Ecma) : Ecma = e
+let updateEcma (su: string -> string) (nu: float -> float) (e: Ecma) : Ecma =
+    match e with
+    | Object o -> Object(List.map (fun (name, e') -> (name, updateTextOrNumber su nu e')) o)
+    | List l -> List(List.map (fun e' -> updateTextOrNumber su nu e') l)
+    | String t -> String(su t)
+    | Number n -> Number(nu n)
+    | _ -> e
+
+let update (su: (string -> string)) (nu: (float -> float)) (s: Selector) (e: Ecma) : Ecma =
+    let rec updateInnerNew
+        (su: string -> string)
+        (nu: float -> float)
+        (s: Selector)
+        (e: Ecma)
+        (doUpdate: bool)
+        : Ecma * bool =
+        match s with
+        | Match n ->
+            let evalRes = eval n e
+
+            if evalRes && doUpdate then
+                updateEcma su nu e, true
+            else
+                e, evalRes
+        | Sequence (seq, seq') ->
+            let x = updateInnerNew su nu seq e false
+
+            if not (snd (x)) then
+                e, false
+            elif not doUpdate then
+                x
+            else
+                match fst (x) with
+                | Object o ->
+                    Object(
+                        o
+                        |> List.map (fun (key, e') -> (key, fst (updateInnerNew su nu seq' e' doUpdate)))
+                    ),
+                    true
+                | List arr ->
+                    List(
+                        arr
+                        |> List.map (fun e' -> fst (updateInnerNew su nu seq' e' doUpdate))
+                    ),
+                    true
+                | _ -> e, true
+        | OneOrMore seq ->
+            let x = updateInnerNew su nu seq e true
+            updateInnerNew su nu (Sequence(seq, OneOrMore seq)) (fst (x)) true
+
+    fst (updateInnerNew su nu s e true)
 
 
 
@@ -516,8 +577,7 @@ let update (su: (string -> string)) (nu: (float -> float)) (s: Selector) (e: Ecm
 // is no `Ecma` value left. Otherwise use `Some`.
 
 
-
-
+let delete (s: Selector) (e: Ecma) : Ecma option = None
 
 
 
@@ -557,8 +617,9 @@ let toZero (x: float) (s: Selector) (e: Ecma) : Ecma =
 
     update id nu s e
 
-// let truncate (n: int) (s: Selector) (e: Ecma) =
-//     let su (string: string) : string = String.
+let truncate (n: int) (s: Selector) (e: Ecma) : Ecma =
+    let su (s: string) : string = if s.Length < n then s else s.[..n - 1]
+    update su id s e
 
 
 
@@ -576,3 +637,5 @@ let toZero (x: float) (s: Selector) (e: Ecma) : Ecma =
 //
 // This function should not be defined recursively; define it in
 // terms of update.
+
+let mapEcma (su: string -> string) (nu: float -> float) (e: Ecma) : Ecma = update su nu (OneOrMore(Match True)) e
