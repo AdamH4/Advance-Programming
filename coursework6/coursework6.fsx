@@ -93,20 +93,18 @@ let createTwoTuplesOfList (postfix: 'a) (input: 'a list) : ('a * 'a) list =
 *)
 
 let createTwoTuplesOfListFold (postfix: 'a) (input: 'a list) : ('a * 'a) list =
-    let newInput =
-        if input.Length % 2 = 0 then
+    let (result, buffer) =
+        List.fold
+            (fun (result, buffer: 'a list) item ->
+                match buffer with
+                | [ x ] -> ((x, item) :: result, [])
+                | _ -> (result, [ item ]))
+            ([], [])
             input
-        else
-            input @ [ postfix ]
 
-    List.foldBack
-        (fun item (result, buffer: 'a list) ->
-            match buffer with
-            | [ x ] -> ((item, x) :: result, [])
-            | _ -> (result, [ item ]))
-        newInput
-        ([], [])
-    |> fst
+    match buffer with
+    | [ x ] -> (x, postfix) :: result |> List.rev
+    | _ -> result |> List.rev
 
 (*
   Task 4:
