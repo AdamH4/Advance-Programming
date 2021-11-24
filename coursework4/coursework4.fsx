@@ -363,15 +363,14 @@ type Path = Name list
 let listPaths (e: Ecma) : Path list =
     let rec innerlistPaths (e: Ecma) (prefix: Path) : Path list =
         match e with
-        | Object ((name, value) :: rest) ->
-            let newPrefix: Path = prefix @ [ name ]
-
-            [ newPrefix ]
-            @ innerlistPaths value newPrefix
-              @ innerlistPaths (Object rest) prefix
-        | List (head :: rest) ->
-            innerlistPaths head prefix
-            @ innerlistPaths (List rest) prefix
+        | Object obj ->
+            obj
+            |> List.collect (fun (name, value) ->
+                let newPrefix: Path = prefix @ [ name ]
+                [ newPrefix ] @ innerlistPaths value newPrefix)
+        | List list ->
+            list
+            |> List.collect (fun item -> innerlistPaths item prefix)
         | _ -> []
 
     [] :: innerlistPaths e []
@@ -436,37 +435,45 @@ let listPaths (e: Ecma) : Path list =
 // whitespace was part of a name or a string value.
 
 
-// TODO refactor and rename things
 let rec show (ecma: Ecma) =
     match ecma with
-    | Object o -> objectToJson o
-    | List l -> listToJson l
+    | Object o ->
+        "{"
+        + (String.concat
+            ","
+            (o
+             |> List.map (fun (name, e) -> show (String name) + ":" + show e)))
+        + "}"
+    | List l ->
+        "["
+        + String.concat "," (l |> List.map (fun item -> show item))
+        + "]"
     | Boolean b -> b.ToString().ToLower()
     | Number n -> n.ToString()
     | String t -> "\"" + t + "\""
     | Empty -> "null"
 
-and objectToJson (object: list<Name * Ecma>) =
-    match object with
-    | [] -> "{}"
-    | _ ->
-        "{\""
-        + fst object.Head
-        + "\":"
-        + show (snd (object.Head))
-        + (object.Tail
-           |> List.fold (fun res (name, e) -> res + "," + "\"" + name + "\":" + show e) "")
-        + "}"
+// and objectToJson (object: list<Name * Ecma>) =
+//     match object with
+//     | [] -> "{}"
+//     | _ ->
+//         "{\""
+//         + fst object.Head
+//         + "\":"
+//         + show (snd (object.Head))
+//         + (object.Tail
+//            |> List.fold (fun res (name, e) -> res + "," + "\"" + name + "\":" + show e) "")
+//         + "}"
 
-and listToJson (list: list<Ecma>) =
-    match list with
-    | [] -> "[]"
-    | _ ->
-        "["
-        + show (list.Head)
-        + (list.Tail
-           |> List.fold (fun res e -> res + "," + show e) "")
-        + "]"
+// and listToJson (list: list<Ecma>) =
+//     match list with
+//     | [] -> "[]"
+//     | _ ->
+//         "["
+//         + show (list.Head)
+//         + (list.Tail
+//            |> List.fold (fun res e -> res + "," + show e) "")
+//         + "]"
 
 
 
