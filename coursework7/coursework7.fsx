@@ -119,7 +119,7 @@ let rec fsTreeWf (fs: FileSystem.FsTree) : bool =
 *)
 let createIsWf (p: Path) (fs: FsTree) : Property =
     (fsTreeWf fs && pathWf p)
-    ==> lazy (fsTreeWf (FileSystem.create p fs))
+    ==> lazy (fsTreeWf (create p fs))
 
 
 (*
@@ -187,7 +187,7 @@ let wfTrees: Gen<FsTree> =
    You may assume that this property is only used with "well-formed"
    generators (meaning that p and fs are well-formed).
 *)
-let deleteIsWellFormed (p: Path) (fs: FsTree) : bool = fsTreeWf (FileSystem.delete p fs)
+let deleteIsWellFormed (p: Path) (fs: FsTree) : bool = fsTreeWf (delete p fs)
 
 
 (*
@@ -291,8 +291,8 @@ let rec isNotPrefix (p1: Path) (p2: Path) : bool =
     | [], _ :: _ -> false
     | _ :: _, [] -> true
 
-let showContainsPath (p: Path) (fs: FsTree) : bool = show fs |> List.contains p
-
 let createAndDelete (fs: FsTree) (p1: Path) (p2: Path) : Property =
     isNotPrefix p1 p2
-    ==> lazy (showContainsPath p2 (delete p1 (create p2 (create p1 fs))))
+    ==> lazy
+        ((show (delete p1 (create p2 (create p1 fs))))
+         |> List.contains p2)
