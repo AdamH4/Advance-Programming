@@ -48,24 +48,6 @@ open FsCheck
 
 open FileSystem
 
-
-// objects for testing
-// let fsObject =
-//    { name = "Taltech"
-//      children = [
-//         { name = "FSharp"
-//           children = [
-//              { name = "FSharp1"
-//                children = [] };
-//              { name = "FSharp2"
-//                children = [] }
-//           ] };
-//           ] }
-// fsTreeWf fsObject
-// let fsEmptyOject: FileSystem.FsTree = { name = "root" ; children = []}
-// FileSystem.isEmpty fsEmptyOject
-// FileSystem.show fsEmptyOject
-
 (*
    Question 1
 
@@ -94,6 +76,14 @@ let pathWf (path: FileSystem.Path) : bool =
     not (path |> List.contains (""))
     && not (path |> List.isEmpty)
 
+let hasDuplicates (list: FileSystem.FsTree list) =
+    (list
+     |> List.map (fun x -> x.name)
+     |> List.distinct)
+        .Length
+    <> list.Length
+
+
 let rec fsTreeWf (fs: FileSystem.FsTree) : bool =
     if fs.name = "" then
         false
@@ -101,13 +91,7 @@ let rec fsTreeWf (fs: FileSystem.FsTree) : bool =
         match fs.children with
         | [] -> true
         | children ->
-            if (children |> List.distinct).Length
-               <> children.Length
-               || (children
-                   |> List.map (fun child -> child.name)
-                   |> List.distinct)
-                   .Length
-                  <> children.Length then
+            if hasDuplicates children then
                 false
             else
                 let filteredItems =
