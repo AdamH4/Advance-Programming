@@ -622,6 +622,7 @@ let truncate (n: int) (s: Selector) (e: Ecma) : Ecma =
 
 
 
+
 // 7. Using the function update, define the function
 //
 //   mapEcma : (string -> string) -> (float -> float) -> Ecma -> Ecma
