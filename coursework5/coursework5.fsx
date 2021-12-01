@@ -611,7 +611,12 @@ let toZero (x: float) (s: Selector) (e: Ecma) : Ecma =
     update id nu s e
 
 let truncate (n: int) (s: Selector) (e: Ecma) : Ecma =
-    let su (s: string) : string = if s.Length < n then s else s.[..n - 1]
+    let su (s: string) : string =
+        if s = null || s.Length < n then
+            s
+        else
+            s.[..n - 1]
+
     update su id s e
 
 
