@@ -223,8 +223,8 @@ let lcs (m: (int * int) -> unit) (xs: 'a []) (ys: 'a []) : Lazy<int> [,] =
                    (m (0, j - 1)
                     0)) |]
 
-    for i in 1 .. xsLength do
-        for j in 1 .. ysLength do
+    for i in 1 .. xs.Length do
+        for j in 1 .. ys.Length do
             match compare xs.[i] ys.[j] with
             | 0 ->
                 table.[i, j] <-
