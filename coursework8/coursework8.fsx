@@ -78,11 +78,25 @@
 
 *)
 
+let next (list: int list) : int list =
+    match List.isEmpty list with
+    | true -> [ 1 ]
+    | false ->
+        (list
+         |> List.windowed 2
+         |> List.fold (fun state item -> (List.sum item) :: state) [ 1 ]
+         |> List.rev)
+        @ [ 1 ]
 
+let triangle: int list seq =
+    Seq.unfold (fun state -> Some(state, next state)) (next [])
 
-
-
-
+let evens (n: int) : int list =
+    triangle
+    |> Seq.filter (fun item -> item.Length % 2 = 0)
+    |> Seq.take n
+    |> Seq.map Seq.sum
+    |> Seq.toList
 
 
 (*
@@ -118,10 +132,19 @@
 
 *)
 
+let generate (xs: 'a list) (f: 'a list -> 'a) : 'a seq =
+    let rec innerGenerate (list: 'a list) : 'a seq =
+        let next = f list
 
+        seq {
+            next
+            yield! (innerGenerate (list.Tail @ [ next ]))
+        }
 
-
-
+    seq {
+        yield! xs
+        yield! innerGenerate xs
+    }
 
 (*
   Task 3: Longest common subsequence
