@@ -204,11 +204,56 @@ let generate (xs: 'a list) (f: 'a list -> 'a) : 'a seq =
   order of calculations visible.
 
 *)
+let lcs (m: (int * int) -> unit) (xs: 'a []) (ys: 'a []) : Lazy<int> [,] =
+    let xsLength = xs.Length + 1
+    let ysLength = ys.Length + 1
 
+    let table =
+        Array2D.zeroCreate<Lazy<int>> xsLength ysLength
 
+    table.[*, 0] <-
+        [| for i in 1 .. xsLength do
+               (lazy
+                   (m (i - 1, 0)
+                    0)) |]
 
+    table.[0, *] <-
+        [| for j in 1 .. ysLength do
+               (lazy
+                   (m (0, j - 1)
+                    0)) |]
 
+    for i in 1 .. xs.Length do
+        for j in 1 .. ys.Length do
+            match compare xs.[i] ys.[j] with
+            | 0 ->
+                table.[i, j] <-
+                    lazy
+                        (m (i, j)
+                         (table.[i - 1, j - 1].Value + 1))
+            | _ ->
+                table.[i, j] <-
+                    lazy
+                        (m (i, j)
+                         (max table.[i, j - 1].Value table.[i - 1, j].Value))
 
+    table
+// xs
+// |> Array.mapi (fun i item ->
+//     ys
+//     |> Array.mapi (fun j item2 ->
+//         match compare item item2 with
+//         | 0 ->
+//             table.[i + 1, j + 1] <-
+//                 lazy
+//                     (m (i + 1, j + 1)
+//                      (table.[i, j].Value + 1))
+//         | _ ->
+//             table.[i + 1, j + 1] <-
+//                 lazy
+//                     (m (i + 1, j + 1)
+//                      (max table.[i + 1, j].Value table.[i, j + 1].Value))))
+// |> ignore
 
 
 (*
