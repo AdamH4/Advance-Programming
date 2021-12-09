@@ -223,8 +223,8 @@ let lcs (m: (int * int) -> unit) (xs: 'a []) (ys: 'a []) : Lazy<int> [,] =
                    (m (0, j - 1)
                     0)) |]
 
-    for i in 1 .. xs.Length do
-        for j in 1 .. ys.Length do
+    for i in 1 .. xsLength do
+        for j in 1 .. ysLength do
             match compare xs.[i] ys.[j] with
             | 0 ->
                 table.[i, j] <-
@@ -237,24 +237,39 @@ let lcs (m: (int * int) -> unit) (xs: 'a []) (ys: 'a []) : Lazy<int> [,] =
                         (m (i, j)
                          (max table.[i, j - 1].Value table.[i - 1, j].Value))
 
-    table
-// xs
-// |> Array.mapi (fun i item ->
-//     ys
-//     |> Array.mapi (fun j item2 ->
-//         match compare item item2 with
-//         | 0 ->
-//             table.[i + 1, j + 1] <-
-//                 lazy
-//                     (m (i + 1, j + 1)
-//                      (table.[i, j].Value + 1))
-//         | _ ->
-//             table.[i + 1, j + 1] <-
-//                 lazy
-//                     (m (i + 1, j + 1)
-//                      (max table.[i + 1, j].Value table.[i, j + 1].Value))))
-// |> ignore
+    // def lcs_length(a, b):
+//     # initialize empty memory of size len(a)+1 * len(b)+1
+//     table = [[0] * (len(b) + 1) for _ in range(len(a) + 1)]
+//     for i, value_from_a in enumerate(a, 1):
+//         for j, value_from_b in enumerate(b, 1):
+//             if value_from_a == value_from_b:
+//                 table[i][j] = table[i - 1][j - 1] + 1
+//             else:
+//                 table[i][j] = max(table[i][j - 1], table[i - 1][j])
+//     # return table[-1][-1]
+//     return table
 
+    // xs = [1, 2, 3, 4]
+// ys = [5, 1, 6, 4]
+// print(lcs_length(xs, ys))
+    // xs
+    // |> Array.mapi (fun i item ->
+    //     ys
+    //     |> Array.mapi (fun j item2 ->
+    //         match compare item item2 with
+    //         | 0 ->
+    //             table.[i + 1, j + 1] <-
+    //                 lazy
+    //                     (m (i + 1, j + 1)
+    //                      (table.[i, j].Value + 1))
+    //         | _ ->
+    //             table.[i + 1, j + 1] <-
+    //                 lazy
+    //                     (m (i + 1, j + 1)
+    //                      (max table.[i + 1, j].Value table.[i, j + 1].Value))))
+    // |> ignore
+
+    table
 
 (*
   Task 4:
