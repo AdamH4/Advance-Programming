@@ -7,8 +7,9 @@
   Coursework 8: Sequences, laziness and computation expressions
 
   ------------------------------------------------------------------------------
-  Name:
-  Student ID:
+  Name: Adam Harnúšek
+  Tallinn University of Technology Student ID
+  or Uni-ID: 214374IV
   ------------------------------------------------------------------------------
 
 
@@ -330,7 +331,7 @@ let rec eval (e: Expr) : (Map<string, int> -> int) =
             let! result1 = eval exp1
             let updatedMap = map.Add(name, result1)
             let result2 = eval exp2
-            return (updatedMap |> result2)
+            return (runReader result2 updatedMap)
     }
 
 //Example:
