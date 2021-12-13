@@ -93,17 +93,11 @@ type Complex = double * double
 
 *)
 
-let add (c1: Complex) (c2: Complex) : Complex =
-    fst (c1) + fst (c2), (snd (c1) + snd (c2))
+let add ((r1, i1): Complex) ((r2, i2): Complex) : Complex = r1 + r2, i1 + i2
 
-let multiply (c1: Complex) (c2: Complex) : Complex =
-    let r1 = fst (c1)
-    let r2 = fst (c2)
-    let i1 = snd (c1)
-    let i2 = snd (c2)
-    r1 * r2 - i1 * i2, r1 * i2 + r2 * i1
+let multiply ((r1, i1): Complex) ((r2, i2): Complex) : Complex = r1 * r2 - i1 * i2, r1 * i2 + r2 * i1
 
-let absolute (x, y) : double =
+let absolute ((x, y): Complex) : double =
     let x_2 = x * x
     let y_2 = y * y
     sqrt (x_2 + y_2)
