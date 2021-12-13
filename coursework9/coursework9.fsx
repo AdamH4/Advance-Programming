@@ -106,13 +106,13 @@ let absolute ((x, y): Complex) : double =
 let mandelbrot (n: int) (c: Complex) : bool =
     let rec mandelbrotInner (count: int) (acc: Complex) : bool =
         match count with
-        | _ when count > 0 && (absolute acc) < 2.0 -> mandelbrotInner (count - 1) (add (multiply acc acc) c)
+        | _ when (absolute acc) > 2.0 -> false
         | 0 -> true
-        | _ -> false
+        | _ -> mandelbrotInner (count - 1) (add (multiply acc acc) c)
 
     mandelbrotInner n (0.0, 0.0)
 
-mandelbrot 10 (-1.0, 0.0)
+mandelbrot 10 (1.4, 0.0)
 
 (*
    Question 2
