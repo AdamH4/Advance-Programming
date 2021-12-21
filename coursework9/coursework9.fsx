@@ -149,7 +149,19 @@ mandelbrot 10 (1.4, 0.0)
    Try to divide fairly.
 *)
 
-let divide m n = failwith "not implemented"
+let rec divideSeq (init: int) (term: int) (size: int) (count: int) =
+    seq {
+        if count = 1 then
+            yield (init, term)
+        else
+            yield (init, init + size - 1)
+            yield! divideSeq (init + size) term size (count - 1)
+    }
+
+let divide m n =
+    let size = n / m
+    divideSeq 0 (n - 1) size m
+
 
 
 
@@ -189,7 +201,21 @@ let divide m n = failwith "not implemented"
 
 *)
 
-let mandelbrotAsync m n start finish cs = failwith "not implemented"
+// let mandelbrotAsync m n start finish cs = failwith "not implemented"
+
+let mandelbrotAsync m n start finish cs =
+    async {
+        let! results =
+            divide m (Array.length cs)
+            |> Seq.map (fun (s, e) ->
+                Async.FromContinuations (fun (cont, _, _) ->
+                    start s
+                    cs.[s..e] |> Array.map (mandelbrot n) |> cont
+                    finish e))
+            |> Async.Parallel
+
+        return Array.concat results
+    }
 
 
 
@@ -239,20 +265,6 @@ let display (n: int) (bs: bool []) : string =
         ("", 1)
     |> fst
 
-
-let n = 2
-
-let bs =
-    [| true
-       false
-       false
-       false
-       true
-       true
-       false |]
-
-display n bs
-
 (*
 
   You may use the function display to display the Mandelbrot pattern
@@ -295,7 +307,11 @@ display n bs
 
 *)
 
-let accumulate f t obs = failwith "not implemented"
+
+let accumulate f t obs =
+    obs
+    |> Observable.scan (fun (xs, _) x -> f xs x) (t, None)
+    |> Observable.choose snd
 
 
 
@@ -321,8 +337,13 @@ let accumulate f t obs = failwith "not implemented"
 
 *)
 
-let chunks n obs = failwith "not implemented"
+let chunks n obs =
+    let emitEveryN xs x =
+        match List.length xs with
+        | m when m = (n - 1) -> ([], Some(xs @ [ x ]))
+        | _ -> (xs @ [ x ], None)
 
+    accumulate emitEveryN [] obs
 
 
 
@@ -348,8 +369,14 @@ let chunks n obs = failwith "not implemented"
 
 *)
 
-let sliding n obs = failwith "not implemented"
+let sliding n obs =
+    let slideEmit xs x =
+        match List.length xs with
+        | m when m = (n - 1) -> (xs @ [ x ], Some(xs @ [ x ]))
+        | m when m = n -> ((List.tail xs) @ [ x ], Some((List.tail xs) @ [ x ]))
+        | _ -> (xs @ [ x ], None)
 
+    accumulate slideEmit [] obs
 
 
 
@@ -375,7 +402,35 @@ let sliding n obs = failwith "not implemented"
 
 *)
 
-let limit clock obs = failwith "not implemented"
+open System
+
+type internal Message<'T> =
+    | ClockTick
+    | Observation of 'T
+
+
+let limit (clock: IObservable<unit>) (obs: IObservable<'a>) =
+    let result = new Event<_>()
+
+    let counter =
+        MailboxProcessor.Start (fun inbox ->
+            let rec loop x =
+                async {
+                    let! msg = inbox.Receive()
+
+                    match msg with
+                    | ClockTick -> return! loop true
+                    | Observation y ->
+                        if x = true then result.Trigger y
+                        return! loop false
+                }
+
+            loop true)
+
+    clock.Add(fun _ -> counter.Post ClockTick)
+    obs.Add(fun e -> counter.Post(Observation e))
+    result.Publish :> IObservable<_>
+
 
 
 
@@ -406,4 +461,13 @@ let limit clock obs = failwith "not implemented"
 
 *)
 
-let alarm n threshold clock obs = failwith "not implemented"
+
+let alarm n threshold clock (obs: IObservable<int>) =
+    let obs2 =
+        obs
+        |> sliding n
+        |> Observable.map (fun xs -> (List.sum (xs)) / n)
+        |> Observable.filter (fun x -> x >= threshold)
+        |> Observable.map (fun _ -> printfn "Alarm")
+
+    limit clock obs2
