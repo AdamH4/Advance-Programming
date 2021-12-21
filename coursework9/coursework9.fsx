@@ -149,20 +149,17 @@ mandelbrot 10 (1.4, 0.0)
    Try to divide fairly.
 *)
 
-let rec divideSeq (init: int) (term: int) (size: int) (count: int) =
-    seq {
-        if count = 1 then
-            yield (init, term)
-        else
-            yield (init, init + size - 1)
-            yield! divideSeq (init + size) term size (count - 1)
-    }
 
 let divide m n =
-    let size = n / m
-    divideSeq 0 (n - 1) size m
+    let s = n / m
 
-
+    seq {
+        for i in 0 .. m - 1 do
+            if i = m - 1 then
+                yield s * (m - 1), n - 1
+            else
+                yield i * s, i * s + s - 1
+    }
 
 
 
