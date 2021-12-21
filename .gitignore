@@ -1,2 +1,7 @@
 FileSystem.fs
 FileSystem.fsi
+
+.fake
+.ionide
+
+exam.txt
