@@ -1,4 +1,4 @@
-# itt8060-2021
+# Advance Programming
 
 2021-2022 winter term at Taltech uni.
 
